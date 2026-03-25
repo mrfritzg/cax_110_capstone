@@ -16,6 +16,12 @@ import pyttsx3
 import ollama
 from tts import text_to_speech, list_voices
 
+import warnings
+
+# Suppress non-critical warnings from dependencies
+warnings.filterwarnings('ignore', category=UserWarning, module='torch.nn.modules.rnn')
+warnings.filterwarnings('ignore', category=FutureWarning, module='torch.nn.utils.weight_norm')
+
 def speak_text(text: str, rate: int = 175) -> None:
     """Uses pyttsx3 to speak the given text aloud."""
     engine = pyttsx3.init()
@@ -76,12 +82,24 @@ Examples:
     )
     
     # Optional arguments
+    # parser.add_argument(
+    #     "--rate", 
+    #     type=int,
+    #     default=175,
+    #     help="The speech rate (default: 175 words per minute)."
+    # )
+
     parser.add_argument(
-        "--rate", 
-        type=int,
-        default=175,
-        help="The speech rate (default: 175 words per minute)."
-    )    
+        "--voice",
+        default="af_heart",
+        help="Kokoro voice to use (default: af_heart)"
+    )
+    parser.add_argument(
+        "--speed",
+        type=float,
+        default=1.0,
+        help="Speech speed: 0.8=slow, 1.0=normal, 1.2=fast (default: 1.0)"
+    )  
     parser.add_argument(
         "--summarize", 
         action="store_true",
@@ -92,6 +110,11 @@ Examples:
         type=str,
         default="llama3.2:3b",
         help="Ollama model to use for summarization (default: 'llama3.2:3b')."
+    )
+    parser.add_argument(
+        "--save",
+        metavar="output.wav",
+        help="Save the generated audio to a .wav file"
     )
     parser.add_argument(
         "--list-voices",
@@ -115,10 +138,10 @@ Examples:
         content = read_file(args.file_path)
         print("File content successfully read")
         print(f"✓ Loaded: {args.file_path} ({len(content)} characters)")
-        # print(f"✓ Loaded: {args.file_path} ")
-        # print(f"The number of characters in the file: {len(content)}")
+        print(f"✓ Loaded: {args.file_path} ")
+        print(f"Here is a print out of the file: {content}")
 
-        # Step 2: Optionally summarize with Ollama LLM
+        # Optionally summarize with Ollama LLM
         if args.summarize:
             print("Now passing it to AI for Summarization...")
             content = summarize_text_with_llm(content, model=args.model)
@@ -126,14 +149,16 @@ Examples:
             print(content)
             print("---\n")
 
-        # Step 3: Convert to speech and play
+        # Step 2: Convert to speech and play
         print("Now converting to speech with Kokoro TTS...")
         text_to_speech(
-            text=content,
+            text=content + "I will also print out a summarized version of the text below",
             voice=args.voice,
             speed=args.speed,
             save_path=args.save,
         )
+        # Step 3: Summarize with Ollama LLM
+        print(summarize_text_with_llm(content, model=args.model))
         print("✓ Done.")
         
         # print(f"Starting to read the file {args.file_path} aloud...")

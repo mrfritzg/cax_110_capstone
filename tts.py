@@ -16,6 +16,20 @@ import sounddevice as sd
 import soundfile as sf
 from kokoro import KPipeline
 
+from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+
+hf_token = os.getenv("HF_TOKEN")
+if not hf_token:
+    raise RuntimeError("HF_TOKEN is missing")
+print("HF_TOKEN loaded:", hf_token[:6] + "...")
+
+# optional: pass to subprocess / lib that respects env
+os.environ["HF_TOKEN"] = hf_token
+
 # ── Voice Options ─────────────────────────────────────────────────────────────
 # af = American Female | am = American Male
 # bf = British Female  | bm = British Male
@@ -43,7 +57,7 @@ def load_pipeline(lang: str = 'a') -> KPipeline:
         A KPipeline object ready to generate audio.
     """
     print("Loading Kokoro TTS model (the first run may take a moment)...")
-    return KPipeline(lang_code=lang)
+    return KPipeline(lang_code=lang, repo_id='hexgrad/Kokoro-82M')
 
 # ── Main Text-to-Speech Function ─────────────────────────────────────────────────
 def text_to_speech(
@@ -77,19 +91,29 @@ def text_to_speech(
     all_audio_chunks = []
 
     for i, (graphemes, phonemes, audio) in enumerate(generator):
-        print(f" [chunk {i + 1}] Graphemes: {graphemes[:60]}...")
+    #     print(f" [chunk {i + 1}] Graphemes: {graphemes[:60]}...")
         all_audio_chunks.append(audio)
 
     # Play this chunk immediately as it is generated
-    sd.play(audio, samplerate=24000)
+    # sd.play(audio, samplerate=24000)
     # Wait until audio finishes before continuing
-    sd.wait()
+    # sd.wait()
 
     #Optionally save the full audio to a combined .wav file
     if save_path and all_audio_chunks:
         combined_audio = np.concatenate(all_audio_chunks)
         sf.write(save_path, combined_audio, 24000)
         print(f"Audio saved to {save_path}")
+        # Load audio from the saved file and play it
+        audio_data, samplerate = sf.read(save_path)
+        sd.play(audio_data, samplerate=samplerate)
+        sd.wait()
+    else: # If not saving, play the combined audio directly from memory
+        print("Playing the audio.")
+        combined_audio = np.concatenate(all_audio_chunks)
+        sd.play(combined_audio, samplerate=24000)
+        sd.wait()
+
 
 # ── Utility ───────────────────────────────────────────────────────────────────
 
