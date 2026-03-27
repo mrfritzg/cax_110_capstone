@@ -11,6 +11,7 @@ This version of the app is a CLI version that will:
 4. **Convert text to natural-sounding AI speech using Kokoro**
 5. Play the audio aloud
 
+![Project Flow Chart](images/aicapstoneflowchart.jpg "Project Flow Chart")
 
 ## Requirements
 
