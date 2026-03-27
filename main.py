@@ -50,7 +50,7 @@ def summarize_text_with_llm(text: str, model: str = "llama3.2:3b") -> str:
         model=model,
         messages=[
             {"role": "system", "content": "You are a helpful assistant. Summarizes the following text clearly, concisely, "
-            "and informatively, keeping it under 200 words."},
+            "and informatively, keeping it under 50 words."},
             {"role": "user", "content": text}
         ]
     )
