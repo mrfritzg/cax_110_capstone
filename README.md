@@ -1,4 +1,4 @@
-# AI Text to Speech Reader & Summarizer
+# Dyslexia Text to Speech Reader & Summarizer powered by AI
 
 This app will be an educational tool to aid people with Dyslexia and
 An app that uses Koroko LLM Model to read files/text aloud using text-to-speech (TTS),
